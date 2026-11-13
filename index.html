@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cooked">
+<meta name="theme-color" content="#faf6ef">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" href="data:image/png;base64,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">
+<title>Cooked</title>
+<style>
+:root{
+  --bg:#faf6ef; --card:#fff; --ink:#2b2622; --muted:#8a7f75; --line:#ebe3d8;
+  --accent:#c4572e; --accent-soft:#f6e3da; --danger:#b3261e;
+  --safe-b:env(safe-area-inset-bottom); --safe-t:env(safe-area-inset-top);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#1b1917;--card:#262321;--ink:#f1ebe3;--muted:#a59a8f;--line:#3a3532;--accent:#e07a50;--accent-soft:#3b2a22}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+h1,h2,h3{font-family:ui-serif,"New York",Georgia,serif;margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+a{color:var(--accent)}
+#app{padding:calc(var(--safe-t) + 12px) 16px calc(84px + var(--safe-b));max-width:720px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.top h1{font-size:28px}
+.search{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:16px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:14px;white-space:nowrap}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.chips.wrap{flex-wrap:wrap;overflow:visible;margin:0 0 8px;padding:2px 0}
+.chip small{opacity:.7;margin-left:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;text-align:left;padding:0;cursor:pointer}
+.thumb{aspect-ratio:4/3;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb .src{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:2px 7px;border-radius:999px}
+.thumb .ph{font-family:ui-serif,Georgia,serif;font-size:34px;color:var(--accent);opacity:.8}
+.card .meta{padding:8px 10px 10px}
+.card .name{font-weight:600;font-size:15px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .name.untitled{color:var(--muted);font-weight:500;font-style:italic}
+.card .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.card .hit{font-size:12px;color:var(--accent);margin-top:3px}
+.empty{text-align:center;color:var(--muted);padding:48px 12px}
+.banner{background:var(--accent-soft);border-radius:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:10px}
+.btn{border:0;background:var(--accent);color:#fff;border-radius:12px;padding:12px 16px;font-weight:600;cursor:pointer}
+.btn.sm{padding:7px 12px;font-size:14px;border-radius:10px}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn.plain{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn.block{width:100%;display:block}
+.back{border:0;background:none;color:var(--accent);font-size:17px;padding:4px 0;cursor:pointer}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;padding:6px 0 calc(6px + var(--safe-b));z-index:10}
+.tabs a{flex:1;text-align:center;text-decoration:none;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabs a svg{width:24px;height:24px}
+.tabs a.on{color:var(--accent)}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
+.sec h3{font-size:18px;margin-bottom:8px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+input[type=text],input[type=url],textarea,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:16px}
+textarea{min-height:110px;resize:vertical}
+.tag{text-decoration:none;display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:3px 10px;font-size:13px;margin:0 6px 6px 0}
+.detail h2{font-size:26px;margin-top:6px}
+.detail .sub{color:var(--muted);margin:4px 0 10px}
+.embed{width:100%;border:0;border-radius:12px;background:var(--card);display:block}
+.yt{aspect-ratio:16/9}
+.ig{height:620px}
+ul.ing{padding-left:0;list-style:none;margin:0}
+ul.ing li{padding:7px 0;border-bottom:1px solid var(--line)}
+ul.ing li:last-child{border:0}
+ol.steps{padding-left:20px;margin:0}
+ol.steps li{margin:0 0 10px}
+.muted{color:var(--muted);font-size:14px}
+.review{list-style:none;padding:0;margin:8px 0 0}
+.review li{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.review li input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--accent)}
+.review li .u{font-size:12px;color:var(--muted);word-break:break-all}
+.review li.dup{opacity:.5}
+.toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-b));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}
+.toast.show{opacity:1}
+.addopt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px;cursor:pointer}
+.addopt .ic{width:42px;height:42px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.addopt b{display:block}
+.addopt span{font-size:13px;color:var(--muted)}
+.count{color:var(--muted);font-size:13px;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav class="tabs" id="tabs">
+  <a href="#/" data-t="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>Recipes</a>
+  <a href="#/add" data-t="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Add</a>
+  <a href="#/settings" data-t="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/></svg>Backup</a>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Storage (IndexedDB) ---------- */
+const DB_NAME='cooked', DB_VER=1;
+let db;
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);
+  r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('recipes'))d.createObjectStore('recipes',{keyPath:'id'});if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta')};
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function tx(store,mode,fn){return new Promise((res,rej)=>{const t=db.transaction(store,mode);const s=t.objectStore(store);const out=fn(s);t.oncomplete=()=>res(out&&out.result!==undefined?out.result:out);t.onerror=()=>rej(t.error)})}
+const dbAll=()=>new Promise((res,rej)=>{const r=db.transaction('recipes').objectStore('recipes').getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const dbPut=rs=>tx('recipes','readwrite',s=>{(Array.isArray(rs)?rs:[rs]).forEach(x=>s.put(x))});
+const dbDel=id=>tx('recipes','readwrite',s=>s.delete(id));
+const metaGet=k=>new Promise(res=>{const r=db.transaction('meta').objectStore('meta').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>res(undefined)});
+const metaSet=(k,v)=>tx('meta','readwrite',s=>s.put(v,k));
+
+/* ---------- State ---------- */
+let recipes=[]; let tagOrder=[]; let lastBackup=null;
+const ui={tag:'All',q:''};
+const INSTR='Instructions';
+let importDraft=null;
+
+/* ---------- Helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200)}
+const byId=id=>recipes.find(r=>r.id===id);
+const fmtDate=ts=>new Date(ts).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+
+function parseLink(raw){
+  let url=raw.trim().replace(/[)\].,!]+$/,'');
+  let m;
+  if(m=url.match(/instagram\.com\/(?:[\w.]+\/)?(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i))
+    return {type:'instagram',code:m[1],url:`https://www.instagram.com/p/${m[1]}/`,key:'ig:'+m[1]};
+  if((m=url.match(/youtu\.be\/([\w-]{11})/i))||(m=url.match(/youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)([\w-]{11})/i)))
+    return {type:'youtube',code:m[1],url:`https://www.youtube.com/watch?v=${m[1]}`,key:'yt:'+m[1]};
+  if(/^https?:\/\//i.test(url)){
+    let k=url.replace(/[?#].*$/,'').replace(/\/$/,'').toLowerCase();
+    return {type:'web',url,key:'web:'+k};
+  }
+  return null;
+}
+const linkKey=r=>r.url?(parseLink(r.url)||{}).key:null;
+
+function tagList(){
+  const counts={};recipes.forEach(r=>(r.tags||[]).forEach(t=>counts[t]=(counts[t]||0)+1));
+  const names=[...new Set([...tagOrder.filter(t=>counts[t]),...Object.keys(counts).sort((a,b)=>a.localeCompare(b))])];
+  return names.map(n=>({name:n,count:counts[n]}));
+}
+async function rememberTags(ts){let ch=false;for(const t of ts||[])if(t&&!tagOrder.includes(t)){tagOrder.push(t);ch=true}if(ch)await metaSet('tagOrder',tagOrder)}
+function normTags(ts){const out=[];for(let t of ts){t=t.trim().replace(/\s+/g,' ');if(!t)continue;const ex=[...tagList().map(x=>x.name),INSTR].find(x=>x.toLowerCase()===t.toLowerCase());t=ex||t;if(!out.includes(t))out.push(t)}return out}
+const tagsLine=r=>(r.tags||[]).join(' · ')||'No tags';
+
+/* tag picker: toggle existing tags, add new ones */
+function tagPicker(sel,id='tp'){
+  const names=[...new Set([...tagList().map(t=>t.name),...sel,INSTR])];
+  return `<div class="chips wrap" id="${id}">${names.map(t=>`<button type="button" class="chip ${sel.includes(t)?'on':''}" data-tg="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+  <div class="row" style="flex-wrap:nowrap"><input type="text" id="${id}-new" placeholder="New tag (e.g. Indian)"><button type="button" class="btn sm plain" id="${id}-add">Add</button></div>`;
+}
+function bindTagPicker(sel,id='tp'){
+  const box=$('#'+id);
+  const wire=()=>box.querySelectorAll('[data-tg]').forEach(b=>b.onclick=()=>{const t=b.dataset.tg;const i=sel.indexOf(t);if(i>=0)sel.splice(i,1);else sel.push(t);b.classList.toggle('on')});
+  wire();
+  const add=()=>{const inp=$('#'+id+'-new');normTags(inp.value.split(',')).forEach(t=>{if(!sel.includes(t))sel.push(t);if(!box.querySelector(`[data-tg="${CSS.escape(t)}"]`)){const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.tg=t;b.textContent=t;box.appendChild(b)}box.querySelector(`[data-tg="${CSS.escape(t)}"]`).classList.add('on')});inp.value='';wire()};
+  $('#'+id+'-add').onclick=add;$('#'+id+'-new').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();add()}};
+  return sel;
+}
+
+/* ---------- Caption parser (rule-based, no AI) ---------- */
+function parseCaption(text){
+  const lines=text.replace(/\r/g,'').split('\n').map(l=>l.trim());
+  const ingr=[],steps=[];let title='';let mode=null;
+  const clean=l=>l.replace(/^[\s•●◦▪▫■□◆◇►▶➤➡→✓✔✅☑️🔸🔹⭐️*·\-–—]+/u,'').replace(/^\d+[.)]\s+/,'').trim();
+  const isJunk=l=>!l||/^(#\w+\s*)+$/.test(l)||/^@\w/.test(l)||/(follow|save this|share this|comment|link in bio|tag a friend|like for)/i.test(l)&&l.length<90;
+  const qty=/^([\d½¼¾⅓⅔⅛⅜⅝⅞]|a\s|an\s|one\s|two\s|three\s|half\s|pinch|dash|handful|splash|salt|pepper|olive oil|to taste)/i;
+  const unit=/\b(cups?|tbsp|tsp|tablespoons?|teaspoons?|oz|ounces?|lbs?|pounds?|grams?|g|kg|ml|cloves?|cans?|sticks?|slices?|pinch|bunch|large|medium|small|whole)\b/i;
+  for(let raw of lines){
+    if(isJunk(raw))continue;
+    const low=raw.toLowerCase().replace(/[^a-z ]/g,'').trim();
+    if(raw.length<40&&/^(for the )?([a-z ]+ )?ingredients?\b|^you( will|'ll)? need|^shopping list/.test(low)){mode='i';continue}
+    if(raw.length<40&&/^(instructions?|directions?|method|steps?|how to( make)?( it)?|preparation|prep)\b/.test(low)){mode='s';continue}
+    const l=clean(raw);if(!l)continue;
+    const looksIngr=l.length<70&&(qty.test(l)||unit.test(l))&&!/[.!]$/.test(l.replace(/\(.*\)/,''))||(mode==='i'&&l.length<80&&!/^\d+[.)]/.test(raw));
+    const looksStep=/^(\d+[.)]|step\s*\d)/i.test(raw)||l.length>=70;
+    if(mode==='s'){steps.push(l);continue}
+    if(mode==='i'&&!looksStep){ingr.push(l);continue}
+    if(looksIngr&&!looksStep){ingr.push(l);if(!mode)mode='i?';continue}
+    if(looksStep){steps.push(l);continue}
+    if(!title&&!ingr.length&&!steps.length&&l.length<60){title=l.replace(/[^\p{L}\p{N}'&,() -]+/gu,'').trim();continue}
+  }
+  return {title,ingredients:ingr,steps};
+}
+
+/* ---------- YouTube titles (free, no key) ---------- */
+async function fillYouTubeTitles(list){
+  for(const r of list){
+    if(r.sourceType!=='youtube'||r.name)continue;
+    try{
+      const res=await fetch('https://noembed.com/embed?url='+encodeURIComponent(r.url));
+      const j=await res.json();
+      if(j&&j.title){r.name=j.title;r.updatedAt=Date.now();await dbPut(r)}
+    }catch(e){}
+  }
+  if(location.hash===''||location.hash==='#/')render();
+}
+
+/* ---------- Search ---------- */
+function matches(r,q){
+  if(!q)return {ok:true};
+  const terms=q.toLowerCase().split(/[,+]| and /).map(s=>s.trim()).filter(Boolean);
+  const hits=[];
+  for(const t of terms){
+    const inName=(r.name||'').toLowerCase().includes(t)||(r.tags||[]).some(x=>x.toLowerCase().includes(t));
+    const ing=(r.ingredients||[]).find(i=>i.toLowerCase().includes(t));
+    if(!inName&&!ing)return {ok:false};
+    if(ing)hits.push(ing);
+  }
+  return {ok:true,hits};
+}
+
+/* ---------- Views ---------- */
+function thumbHTML(r){
+  if(r.photo)return `<img src="${r.photo}" alt="">`;
+  if(r.sourceType==='youtube')return `<img loading="lazy" src="https://i.ytimg.com/vi/${esc(r.code)}/hqdefault.jpg" alt=""><span class="src">YouTube</span>`;
+  const letter=esc((r.name||(r.tags||[])[0]||'?').trim()[0]||'?').toUpperCase();
+  const label=r.sourceType==='instagram'?'Instagram':r.sourceType==='web'?'Web':'Recipe';
+  return `<span class="ph">${letter}</span><span class="src">${label}</span>`;
+}
+
+function viewHome(){
+  const ts=tagList();
+  const unnamed=recipes.filter(r=>!r.name).length;
+  const untagged=recipes.filter(r=>!(r.tags||[]).length).length;
+  const list=recipes.map(r=>({r,m:matches(r,ui.q)})).filter(({r,m})=>m.ok&&(ui.tag==='All'||(ui.tag==='__unnamed'?!r.name:ui.tag==='__untagged'?!(r.tags||[]).length:(r.tags||[]).includes(ui.tag))))
+    .sort((a,b)=>(a.r.name?0:1)-(b.r.name?0:1)||(a.r.name||'').localeCompare(b.r.name||'')||b.r.createdAt-a.r.createdAt);
+  const needBackup=recipes.length&&(!lastBackup||Date.now()-lastBackup>7*864e5);
+  return `
+  <div class="top"><h1>Cooked</h1></div>
+  ${needBackup?`<div class="banner"><span>${lastBackup?'Last backup '+fmtDate(lastBackup):'No backup yet'}</span><button class="btn sm" onclick="doBackup()">Back up</button></div>`:''}
+  <input class="search" id="q" type="search" placeholder="Search name or ingredient (e.g. chicken, lemon)" value="${esc(ui.q)}" autocomplete="off">
+  <div class="chips">
+    <button class="chip ${ui.tag==='All'?'on':''}" data-tagf="All">All<small>${recipes.length}</small></button>
+    ${ts.map(t=>`<button class="chip ${ui.tag===t.name?'on':''}" data-tagf="${esc(t.name)}">${esc(t.name)}<small>${t.count}</small></button>`).join('')}
+    ${unnamed?`<button class="chip ${ui.tag==='__unnamed'?'on':''}" data-tagf="__unnamed">Unnamed<small>${unnamed}</small></button>`:''}
+    ${untagged?`<button class="chip ${ui.tag==='__untagged'?'on':''}" data-tagf="__untagged">No tags<small>${untagged}</small></button>`:''}
+  </div>
+  ${recipes.length===0?`<div class="empty"><h3>Your binder is empty</h3><p>Import a note from the Notes app to get started.</p><a class="btn" href="#/import" style="text-decoration:none;display:inline-block">Import a Note</a></div>`:
+   list.length===0?`<div class="empty">No recipes match.</div>`:
+   `<div class="grid">${list.map(({r,m})=>`
+    <button class="card" data-id="${r.id}">
+      <div class="thumb">${thumbHTML(r)}</div>
+      <div class="meta">
+        <div class="name ${r.name?'':'untitled'}">${esc(r.name||'Untitled')}</div>
+        <div class="sub">${esc(tagsLine(r))}</div>
+        ${m.hits&&m.hits.length?`<div class="hit">${esc(m.hits[0])}</div>`:''}
+      </div>
+    </button>`).join('')}</div>
+    <div class="count">${list.length} recipe${list.length===1?'':'s'}</div>`}
+  `;
+}
+function bindHome(){
+  const q=$('#q');
+  if(q){q.oninput=()=>{ui.q=q.value;const pos=q.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(pos,pos)}}
+  document.querySelectorAll('[data-tagf]').forEach(b=>b.onclick=()=>{ui.tag=b.dataset.tagf;render()});
+  document.querySelectorAll('.card').forEach(c=>c.onclick=()=>location.hash='#/r/'+c.dataset.id);
+}
+
+function embedHTML(r){
+  if(r.sourceType==='instagram')return `<iframe class="embed ig" loading="lazy" src="https://www.instagram.com/p/${esc(r.code)}/embed/captioned/" allowtransparency="true" scrolling="yes"></iframe>`;
+  if(r.sourceType==='youtube')return `<iframe class="embed yt" loading="lazy" src="https://www.youtube-nocookie.com/embed/${esc(r.code)}" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+  return '';
+}
+function sourceLabel(r){return {instagram:'Open in Instagram',youtube:'Open in YouTube',web:'Open website'}[r.sourceType]||'Open link'}
+
+function viewRecipe(id){
+  const r=byId(id);if(!r)return `<button class="back" onclick="history.back()">‹ Back</button><div class="empty">Recipe not found.</div>`;
+  return `<div class="detail">
+    <div class="row" style="justify-content:space-between"><button class="back" onclick="goHome()">‹ Recipes</button><a class="btn sm plain" href="#/edit/${r.id}" style="text-decoration:none">Edit</a></div>
+    <h2>${esc(r.name||'Untitled')}</h2>
+    ${(r.tags||[]).length?`<div style="margin-top:8px">${r.tags.map(t=>`<button class="tag" style="border:0" data-gotag="${esc(t)}">${esc(t)}</button>`).join('')}</div>`:`<div class="sub">No tags</div>`}
+    ${r.url?`<a class="btn block ghost" href="${esc(r.url)}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none;margin:10px 0">${sourceLabel(r)} ↗</a>`:''}
+    ${embedHTML(r)}
+    ${(r.tags||[]).includes(INSTR)&&!(r.ingredients||[]).length?'':`<div class="sec"><h3>Ingredients</h3>
+      ${(r.ingredients||[]).length?`<ul class="ing">${r.ingredients.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:`<p class="muted">None yet. Tap Edit and paste the caption to fill these in. They power ingredient search.</p>`}
+    </div>`}
+    ${(r.steps||[]).length?`<div class="sec"><h3>Steps</h3><ol class="steps">${r.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></div>`:''}
+    <p class="muted" style="margin-top:14px">Added ${fmtDate(r.createdAt)}</p>
+    <button class="btn block danger" style="margin-top:8px" onclick="delRecipe('${r.id}')">Delete recipe</button>
+  </div>`;
+}
+async function delRecipe(id){
+  const r=byId(id);if(!r)return;
+  if(!confirm(`Delete "${r.name||'Untitled'}"? This can't be undone.`))return;
+  await dbDel(id);recipes=recipes.filter(x=>x.id!==id);toast('Recipe deleted');goHome();
+}
+function goHome(){location.hash='#/'}
+
+let editTags=[];
+function viewEdit(id){
+  const isNew=!id;
+  const r=isNew?{name:'',tags:ui.tag&&!ui.tag.startsWith('__')&&ui.tag!=='All'?[ui.tag]:[],url:'',ingredients:[],steps:[]}:byId(id);
+  if(!r)return `<div class="empty">Recipe not found.</div>`;
+  editTags=[...(r.tags||[])];
+  return `
+  <div class="row" style="justify-content:space-between"><button class="back" onclick="history.back()">‹ Cancel</button><button class="btn sm" id="save">Save</button></div>
+  <h2 style="margin-top:6px">${isNew?'New recipe':'Edit recipe'}</h2>
+  <div class="sec">
+    <h3>Paste caption</h3>
+    <p class="muted">Copy the caption from Instagram or the video description, paste it here, then tap Auto-fill to split it into ingredients and steps.</p>
+    <textarea id="cap" placeholder="Paste caption…"></textarea>
+    <button class="btn sm ghost" id="autofill" style="margin-top:8px">Auto-fill</button>
+  </div>
+  <label>Name</label><input type="text" id="f-name" value="${esc(r.name)}" placeholder="e.g. Chicken Tikka Masala">
+  <label>Tags (tap to toggle; pick as many as you like)</label>${tagPicker(editTags)}
+  <label>Link</label><input type="url" id="f-url" value="${esc(r.url)}" placeholder="https://instagram.com/p/…">
+  <label>Ingredients (one per line)</label><textarea id="f-ing" style="min-height:160px">${esc((r.ingredients||[]).join('\n'))}</textarea>
+  <label>Steps (one per line)</label><textarea id="f-steps" style="min-height:160px">${esc((r.steps||[]).join('\n'))}</textarea>
+  <button class="btn block" id="save2" style="margin-top:16px">Save</button>`;
+}
+function bindEdit(id){
+  bindTagPicker(editTags);
+  $('#autofill').onclick=()=>{
+    const p=parseCaption($('#cap').value);
+    if(!p.ingredients.length&&!p.steps.length){toast("Couldn't find ingredients. Edit by hand.");return}
+    if(p.title&&!$('#f-name').value)$('#f-name').value=p.title;
+    if(p.ingredients.length)$('#f-ing').value=p.ingredients.join('\n');
+    if(p.steps.length)$('#f-steps').value=p.steps.join('\n');
+    toast(`Found ${p.ingredients.length} ingredients, ${p.steps.length} steps. Review below.`);
+  };
+  const save=async()=>{
+    const pending=$('#tp-new').value.trim();if(pending)normTags(pending.split(',')).forEach(t=>{if(!editTags.includes(t))editTags.push(t)});
+    const lines=v=>v.split('\n').map(s=>s.trim()).filter(Boolean);
+    const urlRaw=$('#f-url').value.trim();const link=urlRaw?parseLink(urlRaw):null;
+    if(urlRaw&&!link){toast('That link doesn\'t look valid');return}
+    if(link){const dup=recipes.find(x=>x.id!==id&&linkKey(x)===link.key);if(dup&&!confirm(`This link is already saved as "${dup.name||'Untitled'}". Save anyway?`))return}
+    const now=Date.now();
+    const r=id?byId(id):{id:uid(),createdAt:now,history:[]};
+    Object.assign(r,{name:$('#f-name').value.trim(),tags:normTags(editTags),
+      url:link?link.url:'',sourceType:link?link.type:'manual',code:link?link.code||'':'',ingredients:lines($('#f-ing').value),steps:lines($('#f-steps').value),updatedAt:now});
+    await dbPut(r);if(!id)recipes.push(r);await rememberTags(r.tags);
+    if(r.sourceType==='youtube'&&!r.name)fillYouTubeTitles([r]);
+    toast('Saved');location.replace('#/r/'+r.id);
+  };
+  $('#save').onclick=save;$('#save2').onclick=save;
+}
+
+function viewAdd(){
+  return `<div class="top"><h1>Add</h1></div>
+  <button class="addopt" onclick="location.hash='#/import'"><span class="ic">📝</span><div><b>Import a Note</b><span>Paste a whole note. Each link becomes a recipe.</span></div></button>
+  <button class="addopt" onclick="location.hash='#/link'"><span class="ic">🔗</span><div><b>Add a link</b><span>Instagram, YouTube, or a website</span></div></button>
+  <button class="addopt" onclick="location.hash='#/new'"><span class="ic">✍️</span><div><b>Type a recipe</b><span>Enter it by hand, or paste a caption</span></div></button>
+  <p class="muted" style="margin-top:16px">Coming later: importing from photos and website recipe cards.</p>`;
+}
+
+let linkTags=[];
+function viewLink(){
+  linkTags=[];
+  return `<button class="back" onclick="history.back()">‹ Back</button>
+  <h2 style="margin-top:6px">Add a link</h2>
+  <label>Link</label><input type="url" id="l-url" placeholder="Paste Instagram / YouTube / website link">
+  <label>Name (optional)</label><input type="text" id="l-name" placeholder="Name it now or later">
+  <label>Tags</label>${tagPicker(linkTags)}
+  <button class="btn block" id="l-save" style="margin-top:16px">Save</button>`;
+}
+function bindLink(){
+  bindTagPicker(linkTags);
+  const u=$('#l-url');
+  if(navigator.clipboard&&navigator.clipboard.readText){u.onfocus=async()=>{if(u.value)return;try{const t=await navigator.clipboard.readText();if(parseLink(t))u.value=t.trim()}catch(e){}}}
+  $('#l-save').onclick=async()=>{
+    const link=parseLink(u.value);if(!link){toast('Paste a valid link');return}
+    const dup=recipes.find(x=>linkKey(x)===link.key);if(dup){toast('Already saved');location.hash='#/r/'+dup.id;return}
+    const pending=$('#tp-new').value.trim();if(pending)normTags(pending.split(',')).forEach(t=>{if(!linkTags.includes(t))linkTags.push(t)});
+    const now=Date.now();
+    const r={id:uid(),name:$('#l-name').value.trim(),tags:normTags(linkTags),url:link.url,sourceType:link.type,code:link.code||'',ingredients:[],steps:[],history:[],createdAt:now,updatedAt:now};
+    await dbPut(r);recipes.push(r);await rememberTags(r.tags);
+    if(r.sourceType==='youtube'&&!r.name)fillYouTubeTitles([r]);
+    toast('Saved');location.replace('#/r/'+r.id);
+  };
+}
+
+function parseNote(text){
+  const lines=text.replace(/\r/g,'').split('\n');
+  let title='';const items=[];let skipped=0;const seen=new Set();
+  for(const raw of lines){
+    const line=raw.trim();if(!line)continue;
+    const urls=line.match(/https?:\/\/[^\s<>"]+/gi)||[];
+    if(!urls.length){if(!title&&!items.length&&line.length<60)title=line.replace(/[:\-–—]+$/,'').trim();else skipped++;continue}
+    const label=line.replace(/https?:\/\/[^\s<>"]+/gi,'').replace(/^[\s•\-–—*\d.)]+|[\s:\-–—]+$/g,'').trim();
+    for(const u of urls){
+      const link=parseLink(u);if(!link||seen.has(link.key))continue;seen.add(link.key);
+      const dup=recipes.find(x=>linkKey(x)===link.key);
+      items.push({...link,name:urls.length===1?label:'',dup:!!dup,on:!dup,instr:false});
+    }
+  }
+  return {title,items,skipped};
+}
+
+function viewImport(){
+  if(importDraft)return viewImportReview();
+  return `<button class="back" onclick="history.back()">‹ Back</button>
+  <h2 style="margin-top:6px">Import a Note</h2>
+  <p class="muted">In Notes: open a note, tap the text, choose <b>Select All</b>, then <b>Copy</b>. Paste it below. The note's title becomes a tag on every recipe.</p>
+  <textarea id="n-text" style="min-height:220px" placeholder="Paste note here…"></textarea>
+  <label>Tags for these recipes (comma separated, defaults to the note title)</label><input type="text" id="n-tags" placeholder="e.g. Middle Eastern">
+  <button class="btn block" id="n-go" style="margin-top:16px">Find recipes</button>`;
+}
+function bindImport(){
+  if(importDraft)return bindImportReview();
+  const t=$('#n-text'),th=$('#n-tags');
+  t.oninput=()=>{if(!th.dataset.touched){th.value=parseNote(t.value).title}};
+  th.oninput=()=>th.dataset.touched=1;
+  $('#n-go').onclick=()=>{
+    const p=parseNote(t.value);
+    if(!p.items.length){toast('No links found in that note');return}
+    importDraft={tags:normTags((th.value||p.title).split(',')),items:p.items,skipped:p.skipped};render();window.scrollTo(0,0);
+  };
+}
+function viewImportReview(){
+  const d=importDraft;const n=d.items.filter(i=>i.on).length;const dups=d.items.filter(i=>i.dup).length;
+  const cnt={instagram:0,youtube:0,web:0};d.items.forEach(i=>cnt[i.type]++);
+  return `<button class="back" onclick="importDraft=null;render()">‹ Back</button>
+  <h2 style="margin-top:6px">Review import</h2>
+  <label>Tags added to all of these</label>${tagPicker(d.tags)}
+  <p class="muted" style="margin-top:10px">Found ${d.items.length} links: ${cnt.instagram} Instagram, ${cnt.youtube} YouTube, ${cnt.web} web.${dups?` ${dups} already in your app (unchecked).`:''}${d.skipped?` ${d.skipped} lines without links were skipped.`:''} Tap <b>How-to</b> on any link that's a technique (e.g. spatchcocking) to tag it ${INSTR}.</p>
+  <ul class="review">${d.items.map((it,i)=>`
+    <li class="${it.dup?'dup':''}"><input type="checkbox" data-i="${i}" ${it.on?'checked':''}>
+      <div style="flex:1;min-width:0"><input type="text" data-n="${i}" value="${esc(it.name)}" placeholder="${it.type==='youtube'?'Name (auto-filled from YouTube)':'Name (optional)'}" style="padding:7px 10px">
+      <div class="u">${it.type==='instagram'?'Instagram':it.type==='youtube'?'YouTube':'Web'} · ${esc(it.url.replace(/^https?:\/\/(www\.)?/,''))}${it.dup?' · already saved':''}</div></div>
+      <button type="button" class="chip ${it.instr?'on':''}" data-h="${i}" style="font-size:12px;padding:4px 9px">How-to</button></li>`).join('')}</ul>
+  <button class="btn block" id="r-save" style="margin-top:16px">Import ${n} recipe${n===1?'':'s'}</button>`;
+}
+function bindImportReview(){
+  bindTagPicker(importDraft.tags);
+  document.querySelectorAll('[data-i]').forEach(c=>c.onchange=()=>{importDraft.items[c.dataset.i].on=c.checked;const k=importDraft.items.filter(i=>i.on).length;$('#r-save').textContent=`Import ${k} recipe${k===1?'':'s'}`});
+  document.querySelectorAll('[data-n]').forEach(c=>c.oninput=()=>importDraft.items[c.dataset.n].name=c.value);
+  document.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{const it=importDraft.items[b.dataset.h];it.instr=!it.instr;b.classList.toggle('on',it.instr)});
+  $('#r-save').onclick=async()=>{
+    const pending=$('#tp-new').value.trim();if(pending)normTags(pending.split(',')).forEach(t=>{if(!importDraft.tags.includes(t))importDraft.tags.push(t)});
+    const base=normTags(importDraft.tags);const now=Date.now();
+    const sel=importDraft.items.filter(i=>i.on);if(!sel.length){toast('Nothing selected');return}
+    const rs=sel.map((it,k)=>({id:uid(),name:it.name.trim(),tags:it.instr?normTags([...base,INSTR]):base,url:it.url,sourceType:it.type,code:it.code||'',ingredients:[],steps:[],history:[],createdAt:now+k,updatedAt:now}));
+    await dbPut(rs);recipes.push(...rs);await rememberTags([...base,...(sel.some(i=>i.instr)?[INSTR]:[])]);
+    importDraft=null;ui.tag=base[0]||'All';ui.q='';toast(`Imported ${rs.length} recipe${rs.length===1?'':'s'}`);goHome();
+    fillYouTubeTitles(rs);
+  };
+}
+
+function viewSettings(){
+  const ts=tagList();
+  return `<div class="top"><h1>Backup</h1></div>
+  <div class="sec"><h3>Back up to iCloud Drive</h3>
+    <p class="muted">Saves one file with all your recipes. When the share sheet opens, choose <b>Save to Files</b>, then <b>iCloud Drive</b>.</p>
+    <p class="muted">${lastBackup?'Last backup: '+fmtDate(lastBackup):'No backup yet.'} · ${recipes.length} recipes</p>
+    <button class="btn block" onclick="doBackup()">Back up now</button>
+  </div>
+  <div class="sec"><h3>Restore</h3>
+    <p class="muted">Load a backup file. Recipes in the file are added, or updated if they already exist. Nothing is deleted.</p>
+    <input type="file" id="restore" accept="application/json,.json" style="display:none">
+    <button class="btn block plain" onclick="$('#restore').click()">Choose backup file…</button>
+  </div>
+  <div class="sec"><h3>Tags</h3>
+    ${ts.length?ts.map(t=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);flex-wrap:nowrap"><span>${esc(t.name)} <span class="muted">(${t.count})</span></span><span class="row" style="flex-wrap:nowrap"><button class="btn sm plain" data-rename="${esc(t.name)}">Rename</button><button class="btn sm danger" data-deltag="${esc(t.name)}">Remove</button></span></div>`).join(''):'<p class="muted">No tags yet.</p>'}
+    <p class="muted" style="margin-top:8px">Renaming a tag to an existing one merges them. Removing a tag keeps the recipes.</p>
+  </div>
+  <p class="muted" style="text-align:center;margin-top:20px">Cooked · Phase 1 · stored on this phone only</p>`;
+}
+function bindSettings(){
+  $('#restore').onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;
+    try{
+      const data=JSON.parse(await f.text());
+      if(!['cooked','recipe-binder'].includes(data.app)||!Array.isArray(data.recipes))throw new Error('bad');
+      await dbPut(data.recipes);
+      const map=new Map(recipes.map(r=>[r.id,r]));data.recipes.forEach(r=>map.set(r.id,r));recipes=[...map.values()];
+      if(Array.isArray(data.tagOrder))await rememberTags(data.tagOrder);
+      toast(`Restored ${data.recipes.length} recipes`);render();
+    }catch(err){toast("That file isn't a Cooked backup")}
+  };
+  document.querySelectorAll('[data-rename]').forEach(b=>b.onclick=async()=>{
+    const old=b.dataset.rename;const n=prompt('Rename tag',old);if(!n||!n.trim()||n.trim()===old)return;
+    const nn=n.trim();const ch=recipes.filter(r=>(r.tags||[]).includes(old));
+    ch.forEach(r=>{r.tags=[...new Set(r.tags.map(t=>t===old?nn:t))];r.updatedAt=Date.now()});await dbPut(ch);
+    tagOrder=[...new Set(tagOrder.map(t=>t===old?nn:t))];await metaSet('tagOrder',tagOrder);if(ui.tag===old)ui.tag=nn;toast('Tag renamed');render();
+  });
+  document.querySelectorAll('[data-deltag]').forEach(b=>b.onclick=async()=>{
+    const t=b.dataset.deltag;const ch=recipes.filter(r=>(r.tags||[]).includes(t));
+    if(!confirm(`Remove the tag "${t}" from ${ch.length} recipe${ch.length===1?'':'s'}? The recipes stay.`))return;
+    ch.forEach(r=>{r.tags=r.tags.filter(x=>x!==t);r.updatedAt=Date.now()});await dbPut(ch);
+    tagOrder=tagOrder.filter(x=>x!==t);await metaSet('tagOrder',tagOrder);if(ui.tag===t)ui.tag='All';toast('Tag removed');render();
+  });
+}
+async function doBackup(){
+  const data={app:'cooked',version:1,exportedAt:new Date().toISOString(),tagOrder,recipes};
+  const name=`cooked-backup-${new Date().toISOString().slice(0,10)}.json`;
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  const file=new File([blob],name,{type:'application/json'});
+  let ok=false;
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:'Cooked backup'});ok=true}catch(e){if(e.name==='AbortError'){toast('Backup cancelled');return}}
+  }
+  if(!ok){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);ok=true}
+  lastBackup=Date.now();await metaSet('lastBackup',lastBackup);toast('Backup saved');render();
+}
+
+/* ---------- Router ---------- */
+function render(){
+  const h=location.hash||'#/';let html,bind,tab='home';
+  let m;
+  if(m=h.match(/^#\/r\/(.+)/)){html=viewRecipe(m[1]);bind=()=>document.querySelectorAll('[data-gotag]').forEach(b=>b.onclick=()=>{ui.tag=b.dataset.gotag;ui.q='';goHome()})}
+  else if(m=h.match(/^#\/edit\/(.+)/)){html=viewEdit(m[1]);bind=()=>bindEdit(m[1])}
+  else if(h==='#/new'){html=viewEdit(null);bind=()=>bindEdit(null);tab='add'}
+  else if(h==='#/add'){html=viewAdd();bind=()=>{};tab='add'}
+  else if(h==='#/link'){html=viewLink();bind=bindLink;tab='add'}
+  else if(h==='#/import'){html=viewImport();bind=bindImport;tab='add'}
+  else if(h==='#/settings'){html=viewSettings();bind=bindSettings;tab='settings'}
+  else {html=viewHome();bind=bindHome}
+  $('#app').innerHTML=html;bind();
+  document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.dataset.t===tab));
+}
+let lastHash=location.hash;
+window.addEventListener('hashchange',()=>{if(!/^#\/import/.test(location.hash))importDraft=null;const toTop=!(lastHash.startsWith('#/r/')&&(location.hash==='#/'||location.hash===''));render();if(toTop)window.scrollTo(0,0);lastHash=location.hash});
+
+(async function init(){
+  db=await openDB();
+  recipes=await dbAll();
+  tagOrder=(await metaGet('tagOrder'))||[];
+  lastBackup=(await metaGet('lastBackup'))||null;
+  if(navigator.storage&&navigator.storage.persist){try{navigator.storage.persist()}catch(e){}}
+  render();
+  fillYouTubeTitles(recipes.filter(r=>r.sourceType==='youtube'&&!r.name));
+})();
+</script>
+</body>
+</html>
