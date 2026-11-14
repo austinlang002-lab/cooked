@@ -461,7 +461,7 @@ function viewSettings(){
     ${ts.length?ts.map(t=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);flex-wrap:nowrap"><span>${esc(t.name)} <span class="muted">(${t.count})</span></span><span class="row" style="flex-wrap:nowrap"><button class="btn sm plain" data-rename="${esc(t.name)}">Rename</button><button class="btn sm danger" data-deltag="${esc(t.name)}">Remove</button></span></div>`).join(''):'<p class="muted">No tags yet.</p>'}
     <p class="muted" style="margin-top:8px">Renaming a tag to an existing one merges them. Removing a tag keeps the recipes.</p>
   </div>
-  <p class="muted" style="text-align:center;margin-top:20px">Cooked · Phase 1 · stored on this phone only</p>`;
+  <p class="muted" style="text-align:center;margin-top:20px">Cooked v1.3 · stored on this phone only</p>`;
 }
 function bindSettings(){
   $('#restore').onchange=async e=>{
