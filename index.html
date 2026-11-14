@@ -234,7 +234,8 @@ function viewHome(){
     .sort((a,b)=>(a.r.name?0:1)-(b.r.name?0:1)||(a.r.name||'').localeCompare(b.r.name||'')||b.r.createdAt-a.r.createdAt);
   const needBackup=recipes.length&&(!lastBackup||Date.now()-lastBackup>7*864e5);
   return `
-  <div class="top"><h1>Cooked</h1></div>
+  <div class="top"><h1>Cooked</h1><button class="btn sm" onclick="pasteLinkFromClipboard()">＋ Paste link</button></div>
+  ${inbox.length?`<div class="banner"><span>📥 ${inbox.length} new from Instagram</span><a class="btn sm" href="#/inbox" style="text-decoration:none">Review</a></div>`:''}
   ${needBackup?`<div class="banner"><span>${lastBackup?'Last backup '+fmtDate(lastBackup):'No backup yet'}</span><button class="btn sm" onclick="doBackup()">Back up</button></div>`:''}
   <input class="search" id="q" type="search" placeholder="Search name or ingredient (e.g. chicken, lemon)" value="${esc(ui.q)}" autocomplete="off">
   <div class="chips">
@@ -307,7 +308,8 @@ function viewEdit(id){
     <h3>Paste caption</h3>
     <p class="muted">Copy the caption from Instagram or the video description, paste it here, then tap Auto-fill to split it into ingredients and steps.</p>
     <textarea id="cap" placeholder="Paste caption…"></textarea>
-    <button class="btn sm ghost" id="autofill" style="margin-top:8px">Auto-fill</button>
+    <div class="row" style="margin-top:8px"><button class="btn sm ghost" id="autofill">Auto-fill</button>${hasWorker()&&r.sourceType==='instagram'?`<button class="btn sm" id="igfetch">Fetch from Instagram</button>`:''}</div>
+    <div id="igstat" class="muted" style="margin-top:6px"></div>
   </div>
   <label>Name</label><input type="text" id="f-name" value="${esc(r.name)}" placeholder="e.g. Chicken Tikka Masala">
   <label>Tags (tap to toggle; pick as many as you like)</label>${tagPicker(editTags)}
@@ -316,8 +318,18 @@ function viewEdit(id){
   <label>Steps (one per line)</label><textarea id="f-steps" style="min-height:160px">${esc((r.steps||[]).join('\n'))}</textarea>
   <button class="btn block" id="save2" style="margin-top:16px">Save</button>`;
 }
+let editPhoto='';
 function bindEdit(id){
-  bindTagPicker(editTags);
+  bindTagPicker(editTags);editPhoto='';
+  const igb=$('#igfetch');
+  if(igb)igb.onclick=async()=>{
+    const r=byId(id);$('#igstat').textContent='Fetching from Instagram…';igb.disabled=true;
+    const pv=await fetchPreview(r.url);igb.disabled=false;
+    if(!pv||!pv.ok){$('#igstat').textContent="Couldn't read this post. Paste the caption instead.";return}
+    if(pv.caption){$('#cap').value=pv.caption;$('#autofill').click()}
+    if(pv.image&&!r.photo){editPhoto=await savePhoto(pv.image)}
+    $('#igstat').textContent=(pv.caption?'Caption fetched. Review below, then Save.':'No caption found.')+(editPhoto?' Photo saved.':'');
+  };
   $('#autofill').onclick=()=>{
     const p=parseCaption($('#cap').value);
     if(!p.ingredients.length&&!p.steps.length){toast("Couldn't find ingredients. Edit by hand.");return}
@@ -334,6 +346,8 @@ function bindEdit(id){
     if(link){const dup=recipes.find(x=>x.id!==id&&linkKey(x)===link.key);if(dup&&!confirm(`This link is already saved as "${dup.name||'Untitled'}". Save anyway?`))return}
     const now=Date.now();
     const r=id?byId(id):{id:uid(),createdAt:now,history:[]};
+    if(editPhoto)r.photo=editPhoto;
+    const capv=$('#cap').value.trim();if(capv)r.caption=capv;
     Object.assign(r,{name:$('#f-name').value.trim(),tags:normTags(editTags),
       url:link?link.url:'',sourceType:link?link.type:'manual',code:link?link.code||'':'',ingredients:lines($('#f-ing').value),steps:lines($('#f-steps').value),updatedAt:now});
     await dbPut(r);if(!id)recipes.push(r);await rememberTags(r.tags);
@@ -346,52 +360,173 @@ function bindEdit(id){
 function viewAdd(){
   return `<div class="top"><h1>Add</h1></div>
   <button class="addopt" onclick="location.hash='#/import'"><span class="ic">📝</span><div><b>Import a Note</b><span>Paste a whole note. Each link becomes a recipe.</span></div></button>
-  <button class="addopt" onclick="location.hash='#/link'"><span class="ic">🔗</span><div><b>Add a link</b><span>Instagram, YouTube, or a website</span></div></button>
+  <button class="addopt" onclick="linkPrefill=null;location.hash='#/link'"><span class="ic">🔗</span><div><b>Add from a link</b><span>Instagram, YouTube, or a website. Fills in automatically.</span></div></button>
   <button class="addopt" onclick="location.hash='#/new'"><span class="ic">✍️</span><div><b>Type a recipe</b><span>Enter it by hand, or paste a caption</span></div></button>
   <p class="muted" style="margin-top:16px">Coming later: importing from photos and website recipe cards.</p>`;
 }
 
-let linkTags=[];
+/* ---------- Cloudflare worker (Instagram auto-fill + share inbox) ---------- */
+let cfg={workerUrl:'',token:''};let inbox=[];let linkPrefill=null;
+const hasWorker=()=>!!(cfg.workerUrl&&cfg.token);
+async function api(path,params={}){
+  const u=new URL(cfg.workerUrl.replace(/\/+$/,'')+path);u.searchParams.set('token',cfg.token);
+  for(const k in params)u.searchParams.set(k,params[k]);
+  const r=await fetch(u.toString());if(!r.ok)throw new Error('HTTP '+r.status);return r;
+}
+async function fetchPreview(url){
+  if(!hasWorker())return null;
+  try{const r=await api('/preview',{url});return await r.json()}catch(e){return null}
+}
+async function savePhoto(src){
+  // download through the worker, shrink, keep as data URL so it never expires
+  try{
+    const r=src.includes('ytimg.com')?await fetch(src):await api('/img',{u:src});
+    const blob=await r.blob();const bmp=await createImageBitmap(blob);
+    const W=600,sc=Math.min(1,W/bmp.width);const c=document.createElement('canvas');
+    c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    return c.toDataURL('image/jpeg',0.8);
+  }catch(e){return ''}
+}
+async function checkInbox(){
+  if(!hasWorker())return;
+  try{const r=await api('/inbox');const j=await r.json();
+    const known=new Set(recipes.map(linkKey));
+    const fresh=[];
+    for(const it of j.items||[]){const l=parseLink(it.url);if(l&&known.has(l.key)){api('/done',{id:it.id}).catch(()=>{});continue}fresh.push(it)}
+    const changed=fresh.length!==inbox.length;inbox=fresh;
+    if(changed&&(location.hash===''||location.hash==='#/'||location.hash==='#/inbox'))render();
+  }catch(e){}
+}
+async function inboxDone(id){inbox=inbox.filter(i=>i.id!==id);try{await api('/done',{id})}catch(e){}}
+
+function viewInbox(){
+  return `<button class="back" onclick="goHome()">‹ Recipes</button>
+  <h2 style="margin-top:6px">From Instagram</h2>
+  <p class="muted">Links you shared with “Add to Cooked”. Tap one to review and save it.</p>
+  ${inbox.length?`<ul class="review">${inbox.map(it=>`<li><div style="flex:1;min-width:0;cursor:pointer" data-open="${esc(it.id)}"><b>${esc((parseLink(it.url)||{}).type==='youtube'?'YouTube':'Instagram')} post</b><div class="u">${esc(it.url.replace(/^https?:\/\/(www\.)?/,''))} · ${fmtDate(it.added)}</div></div><button class="btn sm" data-open="${esc(it.id)}">Review</button><button class="btn sm plain" data-skip="${esc(it.id)}">✕</button></li>`).join('')}</ul>`:'<div class="empty">All caught up.</div>'}`;
+}
+function bindInbox(){
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{const it=inbox.find(i=>i.id===b.dataset.open);if(!it)return;linkPrefill={url:it.url,inboxId:it.id};location.hash='#/link'});
+  document.querySelectorAll('[data-skip]').forEach(b=>b.onclick=async()=>{if(!confirm('Dismiss this link without saving?'))return;await inboxDone(b.dataset.skip);render()});
+}
+
+async function pasteLinkFromClipboard(){
+  let t='';
+  try{t=await navigator.clipboard.readText()}catch(e){}
+  const l=findUrls(t||'')[0];
+  linkPrefill=l?{url:l}:null;
+  if(!l)toast('No link on the clipboard. Paste it in the Link box.');
+  location.hash='#/link';
+}
+
+/* ---------- Add a link (one screen: link → auto-fill → review → save) ---------- */
+let linkTags=[];let linkState={};
 function viewLink(){
-  linkTags=[];
+  linkTags=[];linkState={photo:'',caption:'',fetchedFor:''};
+  const pre=linkPrefill||{};
   return `<button class="back" onclick="history.back()">‹ Back</button>
-  <h2 style="margin-top:6px">Add a link</h2>
-  <label>Link</label><input type="url" id="l-url" placeholder="Paste Instagram / YouTube / website link">
-  <label>Name (optional)</label><input type="text" id="l-name" placeholder="Name it now or later">
+  <h2 style="margin-top:6px">Add a recipe from a link</h2>
+  <label>Link</label>
+  <div class="row" style="flex-wrap:nowrap"><input type="url" id="l-url" value="${esc(pre.url||'')}" placeholder="Instagram, YouTube or website link"><button type="button" class="btn sm plain" id="l-paste">Paste</button></div>
+  <div id="l-prev"></div>
+  <label>Name</label><input type="text" id="l-name" placeholder="e.g. Brown Butter Chocolate Chip Cookies">
+  <label>Caption</label><textarea id="l-cap" placeholder="${hasWorker()?'Fills in automatically for Instagram. You can also paste it.':'Paste the caption here (optional)'}"></textarea>
+  <button type="button" class="btn sm ghost" id="l-auto" style="margin-top:8px">Auto-fill ingredients &amp; steps</button>
+  <label>Ingredients (one per line)</label><textarea id="l-ing" style="min-height:140px"></textarea>
+  <label>Steps (one per line)</label><textarea id="l-steps" style="min-height:140px"></textarea>
   <label>Tags</label>${tagPicker(linkTags)}
-  <button class="btn block" id="l-save" style="margin-top:16px">Save</button>`;
+  <button class="btn block" id="l-save" style="margin-top:16px">Save recipe</button>
+  ${hasWorker()?'':`<p class="muted" style="margin-top:12px">Tip: connect Instagram auto-fill in the Backup tab so the caption and photo fill in automatically.</p>`}`;
+}
+function setPrev(html){$('#l-prev').innerHTML=html}
+function runAutofill(silent){
+  const p=parseCaption($('#l-cap').value);
+  if(p.title&&!$('#l-name').value)$('#l-name').value=p.title;
+  if(p.ingredients.length)$('#l-ing').value=p.ingredients.join('\n');
+  if(p.steps.length)$('#l-steps').value=p.steps.join('\n');
+  if(!silent)toast(p.ingredients.length||p.steps.length?`Found ${p.ingredients.length} ingredients, ${p.steps.length} steps`:"Couldn't find ingredients. Edit by hand.");
+  return p;
+}
+async function onLinkChange(){
+  const u=$('#l-url').value.trim();const link=parseLink(u);
+  if(!link){setPrev('');return}
+  const dup=recipes.find(x=>linkKey(x)===link.key);
+  if(dup){setPrev(`<div class="banner"><span>Already saved as “${esc(dup.name||'Untitled')}”</span><a class="btn sm" href="#/r/${dup.id}" style="text-decoration:none">Open</a></div>`);return}
+  if(linkState.fetchedFor===link.key)return;linkState.fetchedFor=link.key;
+  if(link.type==='youtube'){
+    setPrev(`<div class="sec row" style="flex-wrap:nowrap"><img src="https://i.ytimg.com/vi/${esc(link.code)}/hqdefault.jpg" style="width:96px;border-radius:8px"><span class="muted">YouTube video</span></div>`);
+    try{const j=await (await fetch('https://noembed.com/embed?url='+encodeURIComponent(link.url))).json();if(j.title&&!$('#l-name').value)$('#l-name').value=j.title}catch(e){}
+    linkState.photoSrc=`https://i.ytimg.com/vi/${link.code}/hqdefault.jpg`;return;
+  }
+  if(link.type!=='instagram'){setPrev('');return}
+  if(!hasWorker()){setPrev(`<p class="muted">Instagram post. Paste the caption below to fill in ingredients.</p>`);return}
+  setPrev(`<p class="muted">Fetching caption and photo from Instagram…</p>`);
+  const pv=await fetchPreview(link.url);
+  if(linkState.fetchedFor!==link.key)return;
+  if(!pv||!pv.ok){setPrev(`<p class="muted">Couldn't read this post automatically. Paste the caption below.</p>`);return}
+  if(pv.image){linkState.photo=await savePhoto(pv.image)}
+  setPrev(`<div class="sec row" style="flex-wrap:nowrap;align-items:flex-start">${linkState.photo?`<img src="${linkState.photo}" style="width:96px;height:96px;object-fit:cover;border-radius:8px;flex:none">`:''}<div><b>${esc(pv.author?'@'+pv.author:'Instagram post')}</b><div class="muted">${pv.caption?'Caption filled in. Check ingredients below.':'Photo found, no caption.'}</div></div></div>`);
+  if(pv.caption&&!$('#l-cap').value){$('#l-cap').value=pv.caption;runAutofill(true)}
 }
 function bindLink(){
   bindTagPicker(linkTags);
   const u=$('#l-url');
-  if(navigator.clipboard&&navigator.clipboard.readText){u.onfocus=async()=>{if(u.value)return;try{const t=await navigator.clipboard.readText();if(parseLink(t))u.value=t.trim()}catch(e){}}}
+  u.oninput=()=>onLinkChange();u.onchange=()=>onLinkChange();
+  $('#l-paste').onclick=async()=>{try{const t=await navigator.clipboard.readText();const l=findUrls(t)[0];if(l){u.value=l;onLinkChange()}else toast('No link on the clipboard')}catch(e){toast('Tap the Link box and paste')}};
+  $('#l-auto').onclick=()=>runAutofill(false);
+  if(u.value)onLinkChange();
   $('#l-save').onclick=async()=>{
     const link=parseLink(u.value);if(!link){toast('Paste a valid link');return}
     const dup=recipes.find(x=>linkKey(x)===link.key);if(dup){toast('Already saved');location.hash='#/r/'+dup.id;return}
     const pending=$('#tp-new').value.trim();if(pending)normTags(pending.split(',')).forEach(t=>{if(!linkTags.includes(t))linkTags.push(t)});
+    const lines=v=>v.split('\n').map(s=>s.trim()).filter(Boolean);
+    if(!linkState.photo&&linkState.photoSrc)linkState.photo=await savePhoto(linkState.photoSrc);
     const now=Date.now();
-    const r={id:uid(),name:$('#l-name').value.trim(),tags:normTags(linkTags),url:link.url,sourceType:link.type,code:link.code||'',ingredients:[],steps:[],history:[],createdAt:now,updatedAt:now};
+    const r={id:uid(),name:$('#l-name').value.trim(),tags:normTags(linkTags),url:link.url,sourceType:link.type,code:link.code||'',
+      caption:$('#l-cap').value.trim(),photo:linkState.photo||'',ingredients:lines($('#l-ing').value),steps:lines($('#l-steps').value),history:[],createdAt:now,updatedAt:now};
     await dbPut(r);recipes.push(r);await rememberTags(r.tags);
+    if(linkPrefill&&linkPrefill.inboxId)await inboxDone(linkPrefill.inboxId);
+    linkPrefill=null;
     if(r.sourceType==='youtube'&&!r.name)fillYouTubeTitles([r]);
-    toast('Saved');location.replace('#/r/'+r.id);
+    toast('Saved');location.replace(inbox.length?'#/inbox':'#/r/'+r.id);
   };
 }
 
+const URL_RE=/(?:https?:\/\/|www\.|\b(?:instagram\.com|youtu\.be|youtube\.com|m\.youtube\.com)\/)[^\s<>"]+?(?=https?:\/\/|[\s<>"]|$)/gi;
+function findUrls(line){return (line.match(URL_RE)||[]).map(u=>/^https?:/i.test(u)?u:'https://'+u.replace(/^\/+/,''))}
 function parseNote(text){
   const lines=text.replace(/\r/g,'').split('\n');
-  let title='';const items=[];let skipped=0;const seen=new Set();
+  let title='';const items=[];const skipped=[];const seen=new Set();
   for(const raw of lines){
-    const line=raw.trim();if(!line)continue;
-    const urls=line.match(/https?:\/\/[^\s<>"]+/gi)||[];
-    if(!urls.length){if(!title&&!items.length&&line.length<60)title=line.replace(/[:\-–—]+$/,'').trim();else skipped++;continue}
-    const label=line.replace(/https?:\/\/[^\s<>"]+/gi,'').replace(/^[\s•\-–—*\d.)]+|[\s:\-–—]+$/g,'').trim();
+    const line=raw.replace(/[\u200B-\u200D\uFEFF\uFFFC]/g,'').trim();if(!line)continue;
+    const urls=findUrls(line);
+    if(!urls.length){if(!title&&!items.length&&line.length<60)title=line.replace(/[:\-–—]+$/,'').trim();else skipped.push(line);continue}
+    const label=line.replace(URL_RE,'').replace(/^[\s•\-–—*\d.)]+|[\s:\-–—]+$/g,'').trim();
     for(const u of urls){
       const link=parseLink(u);if(!link||seen.has(link.key))continue;seen.add(link.key);
       const dup=recipes.find(x=>linkKey(x)===link.key);
-      items.push({...link,name:urls.length===1?label:'',dup:!!dup,on:!dup,instr:false});
+      const generic=/^(instagram|youtube|reel|video|link|watch|instagram (reel|video|post|photo))$/i.test(label);
+      items.push({...link,name:urls.length===1&&label.length<80&&!generic?label:'',dup:!!dup,on:!dup,instr:false});
     }
   }
   return {title,items,skipped};
+}
+/* Notes copies rich links / hyperlinked text as HTML; pull the real hrefs out so none are lost */
+function pasteWithLinks(e){
+  const cd=e.clipboardData;if(!cd)return;
+  const html=cd.getData('text/html');if(!html)return;
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  const hrefs=[...doc.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).filter(h=>/^https?:/i.test(h));
+  if(!hrefs.length)return;
+  e.preventDefault();
+  doc.querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');if(/^https?:/i.test(h)&&!a.textContent.includes(h))a.textContent=(a.textContent.trim()+' '+h).trim()});
+  doc.querySelectorAll('br').forEach(b=>b.replaceWith('\n'));
+  doc.querySelectorAll('p,div,li,h1,h2,h3,tr').forEach(b=>b.append('\n'));
+  let txt=doc.body.textContent.replace(/\n{3,}/g,'\n\n');
+  const plain=cd.getData('text/plain')||'';
+  const missing=findUrls(plain).filter(u=>!txt.includes(u));if(missing.length)txt+='\n'+missing.join('\n');
+  const t=e.target;const st=t.selectionStart,en=t.selectionEnd;
+  t.value=t.value.slice(0,st)+txt+t.value.slice(en);t.dispatchEvent(new Event('input'));
 }
 
 function viewImport(){
@@ -401,12 +536,14 @@ function viewImport(){
   <p class="muted">In Notes: open a note, tap the text, choose <b>Select All</b>, then <b>Copy</b>. Paste it below. The note's title becomes a tag on every recipe.</p>
   <textarea id="n-text" style="min-height:220px" placeholder="Paste note here…"></textarea>
   <label>Tags for these recipes (comma separated, defaults to the note title)</label><input type="text" id="n-tags" placeholder="e.g. Middle Eastern">
-  <button class="btn block" id="n-go" style="margin-top:16px">Find recipes</button>`;
+  <p class="muted" id="n-count" style="margin-top:8px"></p>
+  <button class="btn block" id="n-go" style="margin-top:8px">Find recipes</button>`;
 }
 function bindImport(){
   if(importDraft)return bindImportReview();
   const t=$('#n-text'),th=$('#n-tags');
-  t.oninput=()=>{if(!th.dataset.touched){th.value=parseNote(t.value).title}};
+  t.addEventListener('paste',pasteWithLinks);
+  t.oninput=()=>{const p=parseNote(t.value);if(!th.dataset.touched)th.value=p.title;$('#n-count').textContent=t.value.trim()?`${p.items.length} link${p.items.length===1?'':'s'} found`:''};
   th.oninput=()=>th.dataset.touched=1;
   $('#n-go').onclick=()=>{
     const p=parseNote(t.value);
@@ -420,12 +557,13 @@ function viewImportReview(){
   return `<button class="back" onclick="importDraft=null;render()">‹ Back</button>
   <h2 style="margin-top:6px">Review import</h2>
   <label>Tags added to all of these</label>${tagPicker(d.tags)}
-  <p class="muted" style="margin-top:10px">Found ${d.items.length} links: ${cnt.instagram} Instagram, ${cnt.youtube} YouTube, ${cnt.web} web.${dups?` ${dups} already in your app (unchecked).`:''}${d.skipped?` ${d.skipped} lines without links were skipped.`:''} Tap <b>How-to</b> on any link that's a technique (e.g. spatchcocking) to tag it ${INSTR}.</p>
+  <p class="muted" style="margin-top:10px">Found ${d.items.length} links: ${cnt.instagram} Instagram, ${cnt.youtube} YouTube, ${cnt.web} web.${dups?` ${dups} already in your app (unchecked).`:''}${d.skipped.length?` ${d.skipped.length} line${d.skipped.length===1?'':'s'} without links skipped (see below).`:''} Tap <b>How-to</b> on any link that's a technique (e.g. spatchcocking) to tag it ${INSTR}.</p>
   <ul class="review">${d.items.map((it,i)=>`
     <li class="${it.dup?'dup':''}"><input type="checkbox" data-i="${i}" ${it.on?'checked':''}>
       <div style="flex:1;min-width:0"><input type="text" data-n="${i}" value="${esc(it.name)}" placeholder="${it.type==='youtube'?'Name (auto-filled from YouTube)':'Name (optional)'}" style="padding:7px 10px">
       <div class="u">${it.type==='instagram'?'Instagram':it.type==='youtube'?'YouTube':'Web'} · ${esc(it.url.replace(/^https?:\/\/(www\.)?/,''))}${it.dup?' · already saved':''}</div></div>
       <button type="button" class="chip ${it.instr?'on':''}" data-h="${i}" style="font-size:12px;padding:4px 9px">How-to</button></li>`).join('')}</ul>
+  ${d.skipped.length?`<details class="sec"><summary class="muted">Skipped lines (${d.skipped.length}). Recipes typed out in the note land here. Add them with Type a recipe.</summary><ul class="muted" style="padding-left:18px">${d.skipped.map(l=>`<li>${esc(l)}</li>`).join('')}</ul></details>`:''}
   <button class="btn block" id="r-save" style="margin-top:16px">Import ${n} recipe${n===1?'':'s'}</button>`;
 }
 function bindImportReview(){
@@ -457,13 +595,34 @@ function viewSettings(){
     <input type="file" id="restore" accept="application/json,.json" style="display:none">
     <button class="btn block plain" onclick="$('#restore').click()">Choose backup file…</button>
   </div>
+  <div class="sec"><h3>Instagram auto-fill &amp; sharing</h3>
+    <p class="muted">Connect your free Cloudflare worker to fill in captions and photos automatically and to use “Add to Cooked” from Instagram's share menu.</p>
+    <label>Worker URL</label><input type="url" id="c-url" value="${esc(cfg.workerUrl)}" placeholder="https://cooked.yourname.workers.dev">
+    <label>Secret token</label>
+    <div class="row" style="flex-wrap:nowrap"><input type="text" id="c-tok" value="${esc(cfg.token)}" placeholder="Tap Generate" autocomplete="off" autocapitalize="off"><button type="button" class="btn sm plain" id="c-gen">Generate</button></div>
+    <div class="row" style="margin-top:10px"><button class="btn sm" id="c-save">Save &amp; test</button>${cfg.token?`<button class="btn sm plain" id="c-copytok">Copy token</button>`:''}</div>
+    <div id="c-stat" class="muted" style="margin-top:8px">${hasWorker()?'Connected settings saved.':'Not connected.'}</div>
+    ${hasWorker()?`<label>Link for the iPhone Shortcut</label><input type="text" readonly id="c-sc" value="${esc(cfg.workerUrl.replace(/\/+$/,'')+'/add?token='+cfg.token+'&url=')}"><button class="btn sm plain" id="c-copysc" style="margin-top:8px">Copy Shortcut link</button>`:''}
+  </div>
   <div class="sec"><h3>Tags</h3>
     ${ts.length?ts.map(t=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);flex-wrap:nowrap"><span>${esc(t.name)} <span class="muted">(${t.count})</span></span><span class="row" style="flex-wrap:nowrap"><button class="btn sm plain" data-rename="${esc(t.name)}">Rename</button><button class="btn sm danger" data-deltag="${esc(t.name)}">Remove</button></span></div>`).join(''):'<p class="muted">No tags yet.</p>'}
     <p class="muted" style="margin-top:8px">Renaming a tag to an existing one merges them. Removing a tag keeps the recipes.</p>
   </div>
-  <p class="muted" style="text-align:center;margin-top:20px">Cooked v1.3 · stored on this phone only</p>`;
+  <p class="muted" style="text-align:center;margin-top:20px">Cooked v1.5 · stored on this phone only</p>`;
 }
 function bindSettings(){
+  const copy=async(v,msg)=>{try{await navigator.clipboard.writeText(v);toast(msg)}catch(e){toast('Copy failed. Select and copy manually.')}};
+  $('#c-gen').onclick=()=>{const a=new Uint8Array(18);crypto.getRandomValues(a);$('#c-tok').value=[...a].map(b=>b.toString(36).padStart(2,'0')).join('').slice(0,28)};
+  if($('#c-copytok'))$('#c-copytok').onclick=()=>copy(cfg.token,'Token copied');
+  if($('#c-copysc'))$('#c-copysc').onclick=()=>copy($('#c-sc').value,'Shortcut link copied');
+  $('#c-save').onclick=async()=>{
+    let url=$('#c-url').value.trim().replace(/\/+$/,'');if(url&&!/^https?:\/\//.test(url))url='https://'+url;
+    cfg={workerUrl:url,token:$('#c-tok').value.trim()};await metaSet('cfg',cfg);
+    if(!hasWorker()){render();toast('Saved');return}
+    $('#c-stat').textContent='Testing…';
+    try{const j=await (await api('/ping')).json();render();$('#c-stat').textContent=j.kv?'✓ Connected. Inbox ready.':'Connected, but the INBOX storage isn\'t linked yet (see setup step 4).';toast('Connected');checkInbox()}
+    catch(e){render();$('#c-stat').textContent=String(e).includes('401')?'Token doesn\'t match the TOKEN secret in Cloudflare.':"Couldn't reach the worker. Check the URL.";}
+  };
   $('#restore').onchange=async e=>{
     const f=e.target.files[0];if(!f)return;
     try{
@@ -510,6 +669,7 @@ function render(){
   else if(h==='#/new'){html=viewEdit(null);bind=()=>bindEdit(null);tab='add'}
   else if(h==='#/add'){html=viewAdd();bind=()=>{};tab='add'}
   else if(h==='#/link'){html=viewLink();bind=bindLink;tab='add'}
+  else if(h==='#/inbox'){html=viewInbox();bind=bindInbox}
   else if(h==='#/import'){html=viewImport();bind=bindImport;tab='add'}
   else if(h==='#/settings'){html=viewSettings();bind=bindSettings;tab='settings'}
   else {html=viewHome();bind=bindHome}
@@ -524,9 +684,12 @@ window.addEventListener('hashchange',()=>{if(!/^#\/import/.test(location.hash))i
   recipes=await dbAll();
   tagOrder=(await metaGet('tagOrder'))||[];
   lastBackup=(await metaGet('lastBackup'))||null;
+  cfg=Object.assign(cfg,(await metaGet('cfg'))||{});
   if(navigator.storage&&navigator.storage.persist){try{navigator.storage.persist()}catch(e){}}
   render();
   fillYouTubeTitles(recipes.filter(r=>r.sourceType==='youtube'&&!r.name));
+  checkInbox();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkInbox()});
 })();
 </script>
 </body>
